@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(libpressio_predict VERSION "0.0.1" LANGUAGES C CXX)
+project(libpressio_predict VERSION "0.0.2" LANGUAGES C CXX)
 
 #correct was to set a default build type
 # https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -25,6 +25,7 @@ endif()
 
 include(GNUInstallDirs)
 
+find_package(std_compat REQUIRED)
 find_package(LibPressio REQUIRED)
 find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(LibDistributed REQUIRED)

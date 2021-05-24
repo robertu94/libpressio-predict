@@ -12,7 +12,6 @@
 #include "libpressio_ext/cpp/compressor.h"
 #include "libpressio_ext/cpp/options.h"
 #include "libpressio_ext/cpp/metrics.h"
-#include <libpressio_ext/compat/memory.h>
 
 #include "pressio_search.h"
 #include "pressio_search_metrics.h"
