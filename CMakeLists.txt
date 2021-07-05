@@ -16,28 +16,23 @@ include(CTest)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_SHARED_LIBS "build libraries as shared" ON)
 
-set(default_cxx_standard 17)
-if(NOT LIBPRESSIO_PREDICT_CXX_VERSION)
-  set(LIBPRESSIO_PREDICT_CXX_VERSION ${default_cxx_standard} CACHE 
-    STRING "Which version of the cxx standard to expect" FORCE)
-  set_property(CACHE LIBPRESSIO_PREDICT_CXX_VERSION PROPERTY STRINGS 17 20)
-endif()
-
 include(GNUInstallDirs)
 
 find_package(std_compat REQUIRED)
 find_package(LibPressio REQUIRED)
-find_package(MPI REQUIRED COMPONENTS CXX)
-find_package(LibDistributed REQUIRED)
-find_package(dlib REQUIRED)
-find_package(PkgConfig)
-find_package(Threads)
 
 add_library(libpressio_predict
   #core features
-    src/predictors/nearest_neighbor.cc
-  #public headers
+        src/pressio_sampling.cc
+        src/pressio_sampler.cc
+        src/pressio_reconstructor.cc
 
+        src/plugins/samplers/noop.cc
+        src/plugins/reconstructors/noop.cc
+  #public headers
+        include/libpressio_predict.h
+        include/pressio_sampler.h
+        include/pressio_reconstructor.h
   #private headers
   )
 target_include_directories(
@@ -46,9 +41,7 @@ target_include_directories(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpressio_predict>
   )
-target_link_libraries(libpressio_predict PUBLIC LibDistributed::libdistributed
-  LibPressio::libpressio PRIVATE dlib::dlib )
-target_compile_features(libpressio_predict PUBLIC cxx_std_${LIBPRESSIO_PREDICT_CXX_VERSION})
+target_link_libraries(libpressio_predict PUBLIC LibPressio::libpressio)
 
 option(USE_CLANG_TIDY "include clang-tidy warnings in the build log" OFF)
 if(USE_CLANG_TIDY)
