@@ -6,10 +6,30 @@ A framework for predicting compression ratios for lossy compressors and other ke
 
 ### Benchmarking prediction schemes on your dataset
 
-You can use the tool `pressio_predict_bench` to evaluate your prediction method on a dataset of your choice.  Here is an example of running the tool on 2d slices of the `CLOUDf48.bin` for the Hurricane dataset from SDRBench with the method `average_sampled`:
+You can use the tool `pressio_predict_bench` to evaluate your prediction method on a dataset of your choice.  Here is an example of running the tool the 13 fields of the Hurricane dataset from SDRBench with the method `average_sampled`:
 
-```
-pressio_predict_bench
+```sh
+./build/pressio_predict_bench  \
+    -a dataset \
+    -a settings \
+    -a run \
+    -a score \
+    -L pressio:loader=folder \
+    -l folder:base_dir=$HOME/git/datasets/hurricane/100x500x500/ \
+    -l io_loader:dims=500 \
+    -l io_loader:dims=500 \
+    -l io_loader:dims=100 \
+    -l io_loader:dtype=float \
+    -l io_loader:use_template=true \
+    -l folder:regex='.+/([A-Z]+)f(\d+).bin.f32' \
+    -l folder:groups=field \
+    -l folder:groups=timestep \
+    -b pressio:compressor=sz3 \
+    -b pressio:metric=composite \
+    -b composite:plugins=size \
+    -b composite:plugins=time \
+    -b composite:plugins=error_stat \
+    -o pressio:abs=1e-5
 ```
 
 It will compute the median absolute percentage error.  If built with MPI support, this command will run in parallel on a cluster.  If your metrics are subject to interference, run in isolation mode with the `-Z isolate` flag.
@@ -24,25 +44,47 @@ TODO EXAMPLE
 
 ### Adding a new prediction scheme
 
-Build the code, then run the provided tool `pressio_predict_new $name` to add a new prediction scheme from a template.
+1. Build the code, then run the provided tool `pressio_new metric $name >
+   ./src/plugins/predictors/$name.cc` from LibPressioTools to add a new
+   predictor from a metrics template.
 
-After the template is generated: 
 
-1. edit the resulting file in `src/plugins/predictors/$name to add your prediction method.  You will need to modify the `metrics` and `predict` functions to add both implementations of the methods and how to combine them into a prediction of the compression ratio, and a list of what invalidates them to `get_configuration`.  First the `metrics()` function:
+2. After the code is generated, edit the resulting file in
+   `src/plugins/predictors/$name.cc` to add your prediction method.  You likely
+   just need to edit the `begin_compress_impl` function to gather the metrics
+   you need. You can see the example in `src/plugins/predictors/tiled_samples.cc`
+   for an example that invokes the compressor to produces an estimate.
+
+3. Next in `get_configuration` add an entry `predictors:invalidate` with a `std::vector<std::string>`
+   containing the list of options to a compressor that would invalidate this predictor calculation.
+
+   + a special value of `predictors:nondeterministic` indicates that this metric is
+     is non-deterministic (e.g. Randomized SVD) even if the underlying compressor is.
+   + a special value of `predictors:runtime` indicates that this metric is
+     is dependent on performance related characteristics (e.g. time:compress)
+   + a special value of `predictors:error_dependent` indicates that this metric is
+     invalidated whenever whenever any setting that effects the quality of the
+     data after compression is changed (e.g. the quantized entropy)
+   + a special value of `predictors:error_agnostic` indicates that this metric is
+     independent of the configuration of any compressor (e.g. the standard deviation
+     of the input data)
+   + if any other compressor setting (e.g. `pressio:abs` or `sz:quantization_intervals`)
+     is provided in this list, the compressor for which predictions are being
+     made MUST implement this metric for this predictor to use this predictor.
+     If the compressor does not implement the metric MAY return an
+     appropriate error.
+
+4. After you have the predictors used to produce the estimates, run `pressio_new estimator`
+   to generate a estimator class from a template that combines these estimates
+   into an estimation of the metric of interest.
 
 ```
 TODO EXAMPLE
 ```
 
-Now the `predict()` function:
+2. Edit the CMakeLists.txt code to add dependencies for your new predictor/estimator.
 
-```
-TODO EXAMPLE
-```
-
-2. If you need dependencies other than LibPressio, edit the CMakeLists.txt code to add dependencies for your new predictor.
-
-3. Build your new predictor module, and ensure that the automated unit tests pass.
+3. Build your new predictor and/or estimator modules, and ensure that the automated unit tests pass.
 
 
 ## Installation
@@ -124,3 +166,7 @@ We hope to publish a paper on LibPressioPredict soon.  Until then please cite Li
   organization={IEEE}
 }
 ```
+
+# Reproducability
+
+We've achieved reproducabilty materials for our prior efforts in the reproduceability folder by the first author name and year.

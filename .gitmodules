@@ -1,0 +1,3 @@
+[submodule "reproducability/krasowska2021_and_underwood2023"]
+	path = reproducability/krasowska2021_and_underwood2023
+	url = https://github.com/FTHPC/Correlation_Compressibility
