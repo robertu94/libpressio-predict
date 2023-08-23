@@ -35,6 +35,10 @@ static pressio_options to_libpressio (std::map<std::string, std::vector<std::str
     }
     return out_opts;
 }
+template <class S, class T>
+bool contains(S const& set, T const& item) {
+    return set.find(item) != set.end();
+}
 
 pressio_data extract(std::vector<pressio_options> const& observations, std::vector<std::string> const& labels) {
     pressio_data output = pressio_data::owning(pressio_double_dtype, {labels.size(), observations.size()});
@@ -88,7 +92,7 @@ int main(int argc, char *argv[])
     }
 
     if(rank == 0) {
-        if(opts.actions.contains(Action::Settings)) {
+        if(contains(opts.actions, Action::Settings)) {
             std::cout << "loader" << std::endl << loader->get_options() << std::endl;
             std::cout << "compressor" << std::endl << compressor->get_options() << std::endl;
         }
@@ -96,7 +100,7 @@ int main(int argc, char *argv[])
 
     size_t num_datasets = loader->num_datasets();
     if(rank == 0) {
-        if(opts.actions.contains(Action::Dataset)) {
+        if(contains(opts.actions, Action::Dataset)) {
             std::cout << num_datasets << std::endl;
             auto metadata = loader->load_all_metadata();
             size_t i=0;
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
     };
     std::vector<pressio_options> results;
 
-    if(opts.actions.contains(Action::Evaluate)) {
+    if(contains(opts.actions, Action::Evaluate)) {
         std::vector<task_t> tasks;
 
 
@@ -190,7 +194,7 @@ int main(int argc, char *argv[])
     }
 
 
-    if(rank == 0 && opts.actions.contains(Action::Score)) {
+    if(rank == 0 && contains(opts.actions, Action::Score)) {
         std::vector<std::string> features_ids;
         std::vector<std::string> label_ids;
         libpressio_predictor_metrics score = predictor_quality_metrics_plugins().build("medape");

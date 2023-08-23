@@ -1,1 +1,4 @@
 .startup.gdb
+test.sqlite
+spack-build-*
+spack-configure-*

@@ -40,7 +40,10 @@ struct fold_t {
             return m_data;
         }
 
-        bool operator==(fold_iterator_t& it) {
+        bool operator==(fold_iterator_t& it) const {
+            return i == it.i;
+        }
+        bool operator!=(fold_iterator_t& it) const {
             return i == it.i;
         }
 
@@ -57,6 +60,11 @@ struct fold_t {
                     }
                 }
             }
+        }
+
+        fold_iterator_t(size_t i, size_t start_idx, size_t end_idx, size_t remainder, fold_t* ptr):
+            i(i), start_idx(start_idx), end_idx(end_idx), remainder(remainder),
+            ptr(ptr), m_data() {
         }
 
         size_t i=0;
