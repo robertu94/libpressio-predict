@@ -86,6 +86,12 @@ TODO EXAMPLE
 
 3. Build your new predictor and/or estimator modules, and ensure that the automated unit tests pass.
 
+4. You can test a metric as follows (in this case `tao2019` with `sz3`):
+
+```bash
+pressio -i ~/git/datasets/hurricane/100x500x500/CLOUDf48.bin.f32 -d 500 -d 500 -d 100 -t float pressio -m time -b time:metric=tao2019 -M all -D path/to/liblibpressio_predict.so -b pressio:compressor=sz3
+```
+
 
 ## Installation
 

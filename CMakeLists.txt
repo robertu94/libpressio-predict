@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(LibPressioPredict VERSION 0.0.1)
+project(LibPressioPredict VERSION 0.0.2)
 
 #correct was to set a default build type
 # https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -15,6 +15,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeR
 include(CTest)
 include(GNUInstallDirs)
 find_package(LibPressioTools REQUIRED)
+find_package(LibPressioDataset 0.0.6 REQUIRED)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_SHARED_LIBS "prefer shared libraries" ON)
@@ -28,13 +29,14 @@ configure_file(
 add_library(libpressio_predict 
     src/libpressio_predict.cc
     src/predict.cc
+    src/plugins/predictors/tao2019.cc
     )
 target_include_directories(libpressio_predict PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/include>
     )
-target_link_libraries(libpressio_predict PUBLIC LibPressioTools::libpressio_meta)
+target_link_libraries(libpressio_predict PUBLIC LibPressioTools::libpressio_meta LibPressioDataset::libpressio_dataset)
 install(TARGETS libpressio_predict EXPORT LibPressioPredictTargets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -42,7 +44,6 @@ install(TARGETS libpressio_predict EXPORT LibPressioPredictTargets
   )
 
 if(LIBPRESSIO_PREDICT_BUILD_TOOLS)
-    find_package(LibPressioDataset 0.0.5 REQUIRED)
     find_package(LibDistributed 0.4.3 REQUIRED)
     find_package(SQLite3)
     add_executable(pressio_predict_bench 
