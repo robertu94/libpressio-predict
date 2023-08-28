@@ -16,6 +16,7 @@ include(CTest)
 include(GNUInstallDirs)
 find_package(LibPressioTools REQUIRED)
 find_package(LibPressioDataset 0.0.6 REQUIRED)
+pkg_search_module(ZSTD IMPORTED_TARGET GLOBAL libzstd)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_SHARED_LIBS "prefer shared libraries" ON)
@@ -43,6 +44,18 @@ install(TARGETS libpressio_predict EXPORT LibPressioPredictTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
+
+option(LIBPRESSIO_PREDICT_HAS_KHAN2023 "build support for khan 2023" OFF)
+if(LIBPRESSIO_PREDICT_HAS_KHAN2023)
+    find_package(PkgConfig REQUIRED)
+    find_package(SZ3 REQUIRED)
+    find_package(ZFP REQUIRED)
+    target_link_libraries(libpressio_predict PRIVATE SZ3::SZ3)
+    target_link_libraries(libpressio_predict PRIVATE zfp::zfp)
+    target_sources(libpressio_predict PRIVATE
+        src/plugins/predictors/khan2023_sz3.cc
+        src/plugins/predictors/khan2023_zfp.cc)
+endif()
 
 if(LIBPRESSIO_PREDICT_BUILD_TOOLS)
     find_package(LibDistributed 0.4.3 REQUIRED)
