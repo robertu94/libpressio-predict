@@ -16,6 +16,10 @@ include(CTest)
 include(GNUInstallDirs)
 find_package(LibPressioTools REQUIRED)
 find_package(LibPressioDataset 0.0.6 REQUIRED)
+find_package(PkgConfig REQUIRED)
+find_package(SZ3 REQUIRED)
+find_package(ZFP REQUIRED)
+pkg_search_module(ZSTD IMPORTED_TARGET GLOBAL libzstd)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_SHARED_LIBS "prefer shared libraries" ON)
@@ -30,6 +34,8 @@ add_library(libpressio_predict
     src/libpressio_predict.cc
     src/predict.cc
     src/plugins/predictors/tao2019.cc
+    src/plugins/predictors/khan2023_sz3.cc
+    src/plugins/predictors/khan2023_zfp.cc
     )
 target_include_directories(libpressio_predict PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -37,6 +43,8 @@ target_include_directories(libpressio_predict PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/include>
     )
 target_link_libraries(libpressio_predict PUBLIC LibPressioTools::libpressio_meta LibPressioDataset::libpressio_dataset)
+target_link_libraries(libpressio_predict PRIVATE SZ3::SZ3)
+target_link_libraries(libpressio_predict PRIVATE zfp::zfp)
 install(TARGETS libpressio_predict EXPORT LibPressioPredictTargets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
