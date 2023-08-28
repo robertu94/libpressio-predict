@@ -30,6 +30,7 @@ add_library(libpressio_predict
     src/libpressio_predict.cc
     src/predict.cc
     src/plugins/predictors/tao2019.cc
+    src/plugins/predictors/rahman2023.cc
     )
 target_include_directories(libpressio_predict PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
