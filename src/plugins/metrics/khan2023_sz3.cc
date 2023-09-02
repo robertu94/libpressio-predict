@@ -1278,25 +1278,25 @@ class khan2023_sz3_plugin : public libpressio_metrics_plugin {
         case 1:
         {
           SZ::Config conf(dimensions[0]);
-          estimate = estimate_compress<1>(conf, data, _abs, _stride);
+          estimate = estimate_compress<1>(conf, data, abs_bound, stride);
           break;
         }
         case 2:
         {
           SZ::Config conf(dimensions[0], dimensions[1]);
-          estimate = estimate_compress<2>(conf, data, _abs, _stride);
+          estimate = estimate_compress<2>(conf, data, abs_bound, stride);
           break;
         }
         case 3:
         {
           SZ::Config conf(dimensions[0], dimensions[1], dimensions[2]);
-          estimate = estimate_compress<3>(conf, data, _abs, _stride);
+          estimate = estimate_compress<3>(conf, data, abs_bound, stride);
           break;
         }
         case 4:
         {
           SZ::Config conf(dimensions[0], dimensions[1], dimensions[2], dimensions[3]);
-          estimate = estimate_compress<4>(conf, data, _abs, _stride);
+          estimate = estimate_compress<4>(conf, data, abs_bound, stride);
           break;
         }
       }
@@ -1308,13 +1308,13 @@ class khan2023_sz3_plugin : public libpressio_metrics_plugin {
   
   struct pressio_options get_options() const override {
     pressio_options opts;
-    set(opts, "khan2023_sz3:stride", _stride);
-    set(opts, "khan2023_sz3:abs", _abs);
+    set(opts, "khan2023_sz3:stride", stride);
+    set(opts, "pressio:abs", abs_bound);
     return opts;
   }
   int set_options(pressio_options const& opts) override {
-    get(opts, "khan2023_sz3:stride", &_stride);
-    get(opts, "khan2023_sz3:abs", &_abs);
+    get(opts, "khan2023_sz3:stride", &stride);
+    get(opts, "pressio:abs", &abs_bound);
 
 
     return 0;
@@ -1351,8 +1351,8 @@ class khan2023_sz3_plugin : public libpressio_metrics_plugin {
   }
 
   private:
-    int _stride = 5;
-    double _abs = 0.01;
+    int stride = 5;
+    double abs_bound = 0.01;
     compat::optional<double> estimate;
 };
 

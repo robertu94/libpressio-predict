@@ -12,7 +12,7 @@ class libpressio_predict_plugin : public pressio_configurable, pressio_versionab
         //TODO implement add hooks to implement timing metrics
         return fit_impl(features, labels);
     }
-    int predict(pressio_data const& features, pressio_data& predicted_labels) const {
+    int predict(pressio_data const& features, pressio_data& predicted_labels) {
         //TODO implement add hooks to implement timing metrics
         return predict_impl(features, predicted_labels);
     }
@@ -24,7 +24,7 @@ class libpressio_predict_plugin : public pressio_configurable, pressio_versionab
 
     virtual std::unique_ptr<libpressio_predict_plugin> clone() const=0;
     virtual int fit_impl(pressio_data const& features, pressio_data const& labels) = 0;
-    virtual int predict_impl(pressio_data const& features, pressio_data& predicted_labels) const = 0;
+    virtual int predict_impl(pressio_data const& features, pressio_data& predicted_labels) = 0;
 
     virtual pressio_options get_configuration_impl() const;
     virtual pressio_options get_metrics_results() const;
@@ -33,9 +33,9 @@ class libpressio_predict_plugin : public pressio_configurable, pressio_versionab
 
 class libpressio_predict_quality_metrics_plugin : public pressio_configurable, pressio_versionable {
     public:
-    int score(pressio_data const& features, pressio_data const& labels) {
+    int score(pressio_data const& actual, pressio_data const& predicted) {
         //TODO implement add hooks to implement timing metrics
-        return score_impl(features, labels);
+        return score_impl(actual, predicted);
     }
     std::string type() const final {
         return "predict_quality_metrics";
@@ -44,7 +44,7 @@ class libpressio_predict_quality_metrics_plugin : public pressio_configurable, p
 
 
     virtual std::unique_ptr<libpressio_predict_quality_metrics_plugin> clone() const=0;
-    virtual int score_impl(pressio_data const& features, pressio_data const& labels) = 0;
+    virtual int score_impl(pressio_data const& actual, pressio_data const& predicted) = 0;
     virtual pressio_options get_metrics_results() const =0;
 
     virtual pressio_options get_configuration_impl() const;

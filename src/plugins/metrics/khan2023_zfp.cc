@@ -126,11 +126,6 @@ sampling_3d(T *data, std::vector<size_t> dims, size_t &sample_num, std::vector<s
 	sample_dims.push_back(nbBlocksY*4);
 	sample_dims.push_back(nbBlocksZ*4);
 
-	std::cout << sample_num << " " << sample_dims.size() << std::endl;
-	for(int i = 0; i < sample_dims.size(); i++){
-		std::cout << sample_dims[i] << " ";
-	}
-	std::cout << std::endl;
 
 	std::vector<T> sample_data(sample_num, 0);
 
@@ -194,8 +189,7 @@ class khan2023_zfp_plugin : public libpressio_metrics_plugin {
 				sample_data = sampling_3d<float>(data_, dims, sample_num, sample_dims, sample_ratio);
 				break;
 			default:
-				std::cout << "Dims must be between size 1 and 3" << std::endl;
-				exit(1);
+				return set_error(1, "Dims must be between size 1 and 3");
 		}
 
       float* sampled_dataset = sample_data.data();
@@ -218,12 +212,12 @@ class khan2023_zfp_plugin : public libpressio_metrics_plugin {
   struct pressio_options get_options() const override {
     pressio_options opts;
     set(opts, "khan2023_zfp:sample_ratio", sample_ratio);
-    set(opts, "khan2023_zfp:accuracy", accuracy);
+    set(opts, "pressio:abs", accuracy);
     return opts;
   }
   int set_options(pressio_options const& opts) override {
     get(opts, "khan2023_zfp:sample_ratio", &sample_ratio);
-    get(opts, "khan2023_zfp:accuracy", &accuracy);
+    get(opts, "pressio:abs", &accuracy);
     return 0;
   }
 

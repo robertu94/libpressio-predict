@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(LibPressioPredict VERSION 0.0.2)
+project(LibPressioPredict VERSION 0.0.3)
 
 #correct was to set a default build type
 # https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -14,9 +14,9 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeR
 
 include(CTest)
 include(GNUInstallDirs)
-find_package(LibPressioTools REQUIRED)
-find_package(LibPressioDataset 0.0.6 REQUIRED)
-pkg_search_module(ZSTD IMPORTED_TARGET GLOBAL libzstd)
+find_package(LibPressio 0.96.5 REQUIRED)
+find_package(LibPressioTools 0.4.2 REQUIRED)
+find_package(LibPressioDataset 0.0.7 REQUIRED)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_SHARED_LIBS "prefer shared libraries" ON)
@@ -30,8 +30,11 @@ configure_file(
 add_library(libpressio_predict 
     src/libpressio_predict.cc
     src/predict.cc
-    src/plugins/predictors/tao2019.cc
-    src/plugins/predictors/rahman2023.cc
+    src/plugins/predictors/noop.cc
+    src/plugins/predictor_metrics/medape.cc
+    src/plugins/metrics/tao2019.cc
+    src/plugins/metrics/rahman2023.cc
+    src/plugins/metrics/bench_metric.cc
     )
 target_include_directories(libpressio_predict PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -48,13 +51,34 @@ install(TARGETS libpressio_predict EXPORT LibPressioPredictTargets
 option(LIBPRESSIO_PREDICT_HAS_KHAN2023 "build support for khan 2023" OFF)
 if(LIBPRESSIO_PREDICT_HAS_KHAN2023)
     find_package(PkgConfig REQUIRED)
+    pkg_search_module(ZSTD IMPORTED_TARGET GLOBAL libzstd)
     find_package(SZ3 REQUIRED)
     find_package(ZFP REQUIRED)
     target_link_libraries(libpressio_predict PRIVATE SZ3::SZ3)
     target_link_libraries(libpressio_predict PRIVATE zfp::zfp)
     target_sources(libpressio_predict PRIVATE
-        src/plugins/predictors/khan2023_sz3.cc
-        src/plugins/predictors/khan2023_zfp.cc)
+        src/plugins/metrics/khan2023_sz3.cc
+        src/plugins/metrics/khan2023_zfp.cc)
+endif()
+
+option(LIBPRESSIO_PREDICT_HAS_SIAN2022 "build support for sian 2022" OFF)
+if(LIBPRESSIO_PREDICT_HAS_SIAN2022)
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(ZSTD IMPORTED_TARGET GLOBAL libzstd)
+    find_package(SZ3 REQUIRED)
+    target_link_libraries(libpressio_predict PRIVATE SZ3::SZ3)
+    target_sources(libpressio_predict PRIVATE
+        src/plugins/metrics/sian2022.cc)
+endif()
+
+option(LIBPRESSIO_PREDICT_HAS_PYTHON "build support for predictors in python" ON)
+if(LIBPRESSIO_PREDICT_HAS_PYTHON)
+  find_package(pybind11 REQUIRED)
+  target_sources(libpressio_predict
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/plugins/predictors/python.cc
+    )
+  target_link_libraries(libpressio_predict PRIVATE pybind11::embed)
 endif()
 
 if(LIBPRESSIO_PREDICT_BUILD_TOOLS)
@@ -72,6 +96,10 @@ if(LIBPRESSIO_PREDICT_BUILD_TOOLS)
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
+endif()
+
+if(BUILD_TESTING)
+    add_subdirectory(test)
 endif()
 
 
