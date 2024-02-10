@@ -6,9 +6,9 @@
 #include <iomanip>
 #include <stdexcept>
 #include <utility>
+#include <dlfcn.h>
 #include <getopt.h>
 #include <std_compat/optional.h>
-#include <libpressio_meta.h>
 #include <libpressio_dataset_ext/loader.h>
 #include <libpressio_ext/cpp/libpressio.h>
 #include <libpressio_ext/cpp/serializable.h>
@@ -71,8 +71,19 @@ int main(int argc, char *argv[])
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    const char* plugins_ptr = getenv("LIBPRESSIO_PLUGINS");
+    std::string plugins;
+    void* lib = nullptr;
+    if(plugins_ptr!=nullptr) {
+        plugins = plugins_ptr;
+        lib = dlopen(plugins.c_str(), RTLD_NOW|RTLD_LOCAL);
+        if(lib) {
+            void(*fn)(void) ;
+            *(void **)(&fn) = dlsym(lib, "libpressio_register_all");
+            fn();
+        }
+    }
 
-    libpressio_register_all();
     cli_options opts = parse_options(argc, argv);
 
     if(rank == 0 && log_level{opts.verbose} >= log_level::warning) {

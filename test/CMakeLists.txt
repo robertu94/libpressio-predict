@@ -15,3 +15,6 @@ if(LIBPRESSIO_PREDICT_HAS_PYTHON)
         add_test(NAME libpressio_predict_test_python COMMAND test_python)
     endif()
 endif()
+
+add_executable(test_scheme test_scheme.cc)
+target_link_libraries(test_scheme PRIVATE libpressio_predict)

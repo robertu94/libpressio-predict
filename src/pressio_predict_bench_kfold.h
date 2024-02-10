@@ -44,7 +44,7 @@ struct fold_t {
             return i == it.i;
         }
         bool operator!=(fold_iterator_t& it) const {
-            return i == it.i;
+            return i != it.i;
         }
 
         void update() {

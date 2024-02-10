@@ -33,9 +33,11 @@ class sian2022_plugin : public libpressio_metrics_plugin {
       predictor.precompress_data(block_range->begin());
       quantizer.precompress_data();
 
-      for (auto block = block_range->begin(); block != block_range->end(); ++block) {
+      auto end = block_range->end();
+      for (auto block = block_range->begin(); block != end; ++block) {
         element_range->update_block_range(block, block_size);
-        for (auto element = element_range->begin(); element != element_range->end(); ++element) {
+        auto eend = element_range->end();
+        for (auto element = element_range->begin(); element != eend; ++element) {
           ii++;
 	  quant_inds[quant_count++] = quantizer.quantize_and_overwrite(*element, predictor.predict(element));
 	  if (ii % 100 == 0) {

@@ -2,3 +2,7 @@
 test.sqlite
 spack-build-*
 spack-configure-*
+
+*.btr
+perf.data
+perf.data.old

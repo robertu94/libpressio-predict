@@ -81,7 +81,7 @@ class tao2019_plugin : public libpressio_metrics_plugin {
     pressio_options opts;
     set_meta_configuration(opts, "pressio:compressor", compressor_plugins(), comp);
     set_meta_configuration(opts, "tao2019:compressor", compressor_plugins(), comp);
-    set(opts, "predictors:invalidate", std::vector<std::string>{"predictors:error_dependent"});
+    set(opts, "predictors:invalidate", std::vector<std::string>{"predictors:error_dependent", "predictors:error_agnostic", "predictors:data"});
     set(opts, "pressio:stability", "stable");
     set(opts, "pressio:thread_safe", pressio_thread_safety_multiple);
     return opts;
