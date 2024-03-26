@@ -1,4 +1,5 @@
 #include "libpressio_predict.h"
+#include "libpressio_predict_version.h"
 extern "C" {
 int libpressio_predict_version_major() {
     return LIBPRESSIO_PREDICT_MAJOR_VERSION;

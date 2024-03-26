@@ -5,6 +5,7 @@
 #include "pressio_search_results.h"
 #include <std_compat/memory.h>
 #include "libpressio_predict_ext/cpp/predict.h"
+#include "libpressio_predict_version.h"
 
 
 

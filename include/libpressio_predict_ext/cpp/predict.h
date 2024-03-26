@@ -4,6 +4,8 @@
 #include <set>
 #include <libpressio_ext/cpp/pressio.h>
 #include <libpressio_ext/cpp/configurable.h>
+#include <libpressio_ext/cpp/versionable.h>
+#include <libpressio_ext/cpp/compressor.h>
 
 namespace libpressio { namespace predict {
 

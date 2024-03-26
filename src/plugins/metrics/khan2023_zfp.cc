@@ -224,6 +224,7 @@ class khan2023_zfp_plugin : public libpressio_metrics_plugin {
   struct pressio_options get_configuration_impl() const override {
     pressio_options opts;
     set(opts, "predictors:invalidate", std::vector<std::string>{"predictors:error_dependent"});
+    set(opts, "predictors:requires_decompress", false);
     set(opts, "pressio:stability", "stable");
     set(opts, "pressio:thread_safe", pressio_thread_safety_multiple);
     return opts;
@@ -234,6 +235,8 @@ class khan2023_zfp_plugin : public libpressio_metrics_plugin {
     set(opt, "pressio:description", "estimates compression ratio for zfp given a sample_ratio in [0,1]");
     set(opt, "khan2023_zfp:sample_ratio", "ratio of the input dataset used for estimation, values should be in [0,1]");
     set(opt, "khan2023_zfp:accuracy", "accuracy setting for zfp estimation");
+    set(opt, "pressio:abs", "accuracy setting for zfp estimation");
+    set(opt, "khan2023_zfp:size:compression_ratio", "estimate of the compresssion ratio");
     return opt;
   }
 

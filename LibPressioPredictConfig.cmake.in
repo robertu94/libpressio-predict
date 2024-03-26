@@ -2,7 +2,6 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/LibPressioPredictTargets.cmake")
 
-find_package(LibPressioTools REQUIRED)
 if(@LIBPRESSIO_PREDICT_BUILD_TOOLS@)
     find_package(LibPressioDataset REQUIRED)
 endif()

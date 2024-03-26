@@ -45,12 +45,21 @@ class rahman2023_plugin : public libpressio_metrics_plugin {
       pressio_options opts;
       set(opts, "pressio:stability", "stable");
       set(opts, "pressio:thread_safe", pressio_thread_safety_multiple);
+      set(opts, "predictors:requires_decompress", false);
+      set(opts, "predictors:invalidate", std::vector<std::string>{"predictors:error_dependent"});
       return opts;
     }
 
     struct pressio_options get_documentation_impl() const override {
       pressio_options opt;
-      set(opt, "pressio:description", "");
+      set(opt, "pressio:description", "estimation method from fxrz");
+      set(opt, "rahman2023:optimization:non_constant_block_percentage", "percentage of non-constant blocks");
+      set(opt, "rahman2023:feature:value_range", "the value range of the data");
+      set(opt, "rahman2023:feature:mean_value", "the mean value of the data");
+      set(opt, "rahman2023:feature:mean_neighbor_difference", "mean difference between neighbors");
+      set(opt, "rahman2023:feature:mean_lorenzo_difference", "mean difference between lorenzo predictions");
+      set(opt, "rahman2023:feature:mean_spline_difference", "mean difference between spline predictions");
+      return opt;
       return opt;
     }
 

@@ -52,7 +52,7 @@
 #include <unordered_set>
 #include <set>
 
-namespace SZ {
+namespace SZ3 {
 
 
     template<class T>
@@ -146,7 +146,7 @@ namespace SZ {
         }
 
         //save the huffman Tree in the compressed data
-        uint save(uchar *&c) {
+        void save(uchar *&c) {
             auto cc = c;
             write(offset, c);
             int32ToBytes_bigEndian(c, nodeCount);
@@ -162,7 +162,6 @@ namespace SZ {
             else
                 totalSize = convert_HuffTree_to_bytes_anyStates<unsigned int>(nodeCount, c);
             c += totalSize;
-            return c - cc;
         }
 
         size_t size_est() {
@@ -691,7 +690,7 @@ namespace SZ {
 }
 
 
-using namespace SZ;
+using namespace SZ3;
 
 template<class T, uint N, class Quantizer, class Encoder, class Lossless>
 class SZInterpolationEstimator {
@@ -796,7 +795,7 @@ public:
         size_t tree_size = buffer_pos - pos;
         
         // size_t huff_size = encoder.encode(quant_inds, buffer_pos);
-        // auto encoder2 = SZ::HuffmanEncoder<int>();
+        // auto encoder2 = SZ3::HuffmanEncoder<int>();
         // encoder2.load(pos, tree_size);
         // auto decoded_data = encoder2.decode(temp, quant_inds.size());
 
@@ -1248,15 +1247,15 @@ double estimate_compress(Config conf, T *data, double abs, int stride) {
     conf.cmprAlgo = ALGO_INTERP;
     conf.interpAlgo = INTERP_ALGO_CUBIC;
     conf.interpDirection = 0;
-    conf.errorBoundMode = SZ::EB_ABS;
+    conf.errorBoundMode = SZ3::EB_ABS;
     conf.absErrorBound = abs;
 
 	int numBins = conf.quantbinCnt / 2;
 
-  SZInterpolationEstimator<T, N, SZ::LinearQuantizer<T>, SZ::CustomHuffmanEncoder<int>, SZ::Lossless_bypass> estimator(
-          SZ::LinearQuantizer<T>(conf.absErrorBound, conf.quantbinCnt / 2),
-          SZ::CustomHuffmanEncoder<int>(),
-          SZ::Lossless_bypass());
+  SZInterpolationEstimator<T, N, SZ3::LinearQuantizer<T>, SZ3::CustomHuffmanEncoder<int>, SZ3::Lossless_bypass> estimator(
+          SZ3::LinearQuantizer<T>(conf.absErrorBound, conf.quantbinCnt / 2),
+          SZ3::CustomHuffmanEncoder<int>(),
+          SZ3::Lossless_bypass());
   std::vector<double> estresults = estimator.estimate(conf, data, stride);
   double estCR = estresults[0];
   double sample_dur = estresults[2];
@@ -1277,25 +1276,25 @@ class khan2023_sz3_plugin : public libpressio_metrics_plugin {
       switch(input->num_dimensions()) {
         case 1:
         {
-          SZ::Config conf(dimensions[0]);
+          SZ3::Config conf(dimensions[0]);
           estimate = estimate_compress<1>(conf, data, abs_bound, stride);
           break;
         }
         case 2:
         {
-          SZ::Config conf(dimensions[0], dimensions[1]);
+          SZ3::Config conf(dimensions[0], dimensions[1]);
           estimate = estimate_compress<2>(conf, data, abs_bound, stride);
           break;
         }
         case 3:
         {
-          SZ::Config conf(dimensions[0], dimensions[1], dimensions[2]);
+          SZ3::Config conf(dimensions[0], dimensions[1], dimensions[2]);
           estimate = estimate_compress<3>(conf, data, abs_bound, stride);
           break;
         }
         case 4:
         {
-          SZ::Config conf(dimensions[0], dimensions[1], dimensions[2], dimensions[3]);
+          SZ3::Config conf(dimensions[0], dimensions[1], dimensions[2], dimensions[3]);
           estimate = estimate_compress<4>(conf, data, abs_bound, stride);
           break;
         }
@@ -1323,6 +1322,7 @@ class khan2023_sz3_plugin : public libpressio_metrics_plugin {
   struct pressio_options get_configuration_impl() const override {
     pressio_options opts;
     set(opts, "predictors:invalidate", std::vector<std::string>{"predictors:error_dependent"});
+    set(opts, "predictors:requires_decompress", false);
     set(opts, "pressio:stability", "stable");
     set(opts, "pressio:thread_safe", pressio_thread_safety_multiple);
     return opts;
@@ -1333,6 +1333,8 @@ class khan2023_sz3_plugin : public libpressio_metrics_plugin {
     set(opt, "pressio:description", "predicts the compression ratio following huffman coding for the SZ3 interpolation predictor");
     set(opt, "khan2023_sz3:stride", "initial stride for the interpolation predictor, recommended: [2,5,10,15]");
     set(opt, "khan2023_sz3:abs", "absolute error bound to predict for");
+    set(opt, "pressio:abs", "absolute error bound to predict for");
+    set(opt, "khan2023_sz3:size:compression_ratio", "the predicted compression ratio");
 
     return opt;
   }

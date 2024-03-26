@@ -54,7 +54,7 @@ class bench_metric_plugin : public libpressio_metrics_plugin {
     pressio_options opt;
     set_meta_docs(opt, "bench_metric:metric", "metric to benchmark", metric);
     set(opt, "pressio:description", "runs a metric multiple times recording its timing");
-    set(opt, "bench_metric:warmup", "skip this many executions before starting to record");
+    set(opt, "bench_metric:warmups", "skip this many executions before starting to record");
     set(opt, "bench_metric:replicates", "execute this many times (excluding warmups)");
     auto doc_trackers = [this,&opt](std::string const& event_name){
         set(opt, "bench_metric:" + event_name + ":mean", "mean time for " + event_name);
