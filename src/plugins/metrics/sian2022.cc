@@ -15,11 +15,11 @@ namespace libpressio { namespace sian2022_metrics_ns {
 class sian2022_plugin : public libpressio_metrics_plugin {
   public:
     template<uint N, typename T>
-    double compute_estimate(SZ::Config conf, T *data) {
+    double compute_estimate(SZ3::Config conf, T *data) {
       std::copy_n(conf.dims.begin(), N, global_dimensions.begin());
       int block_size = conf.blockSize;
-      auto block_range = std::make_shared<SZ::multi_dimensional_range<float, N>>(data, std::begin(global_dimensions), std::end(global_dimensions), block_size, 0);
-      auto element_range = std::make_shared<SZ::multi_dimensional_range<float, N>>(data, std::begin(global_dimensions), std::end(global_dimensions), 1, 0);
+      auto block_range = std::make_shared<SZ3::multi_dimensional_range<float, N>>(data, std::begin(global_dimensions), std::end(global_dimensions), block_size, 0);
+      auto element_range = std::make_shared<SZ3::multi_dimensional_range<float, N>>(data, std::begin(global_dimensions), std::end(global_dimensions), 1, 0);
       std::vector<int> quant_inds(conf.num);
       size_t quant_count = 0;
       int pre_num = 0;
@@ -27,8 +27,8 @@ class sian2022_plugin : public libpressio_metrics_plugin {
       int ii = 0;
       std::unordered_map<float, size_t> pre_freq;
 
-      SZ::LorenzoPredictor<float,N,1> predictor;
-      SZ::LinearQuantizer<float> quantizer;
+      SZ3::LorenzoPredictor<float,N,1> predictor;
+      SZ3::LinearQuantizer<float> quantizer;
       quantizer.set_eb(eb);
       predictor.precompress_data(block_range->begin());
       quantizer.precompress_data();
@@ -95,25 +95,25 @@ class sian2022_plugin : public libpressio_metrics_plugin {
       switch(input->num_dimensions()) {
         case 1:
         {
-          SZ::Config conf(dimensions[0]);
+          SZ3::Config conf(dimensions[0]);
           estimate = compute_estimate<1>(conf, data);
 	  break;
 	}
 	case 2:
         {
-          SZ::Config conf(dimensions[1], dimensions[0]);
+          SZ3::Config conf(dimensions[1], dimensions[0]);
           estimate = compute_estimate<2>(conf, data);
 	  break;
 	}
         case 3:
         {
-          SZ::Config conf(dimensions[2], dimensions[1], dimensions[0]);
+          SZ3::Config conf(dimensions[2], dimensions[1], dimensions[0]);
 	  estimate = compute_estimate<3>(conf, data);
 	  break;
 	}
         case 4:
         {
-          SZ::Config conf(dimensions[3], dimensions[2], dimensions[1], dimensions[0]);
+          SZ3::Config conf(dimensions[3], dimensions[2], dimensions[1], dimensions[0]);
           estimate = compute_estimate<4>(conf, data);
 	  break;
         }

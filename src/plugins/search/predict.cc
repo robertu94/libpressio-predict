@@ -39,12 +39,12 @@ struct predict_search: public pressio_search_plugin {
               });
               if(do_compress || do_decompress) {
                   //if decompression is required, we must also compress or else we dont have the data we need
-                  int ec = metrics->compress_many(input_datas.begin(), input_datas.end(), 
+/*                  int ec = metrics->compress_many(input_datas.begin(), input_datas.end(), 
                                          compressed_ptrs.begin(), compressed_ptrs.end());
                   if(ec < 0) {
                       throw pressio_search_exception("compression failed in the proxy_fn "s + metrics->error_msg());
                   }
-              }
+ */             }
               if(do_decompress) {
                   std::vector<pressio_data> outputs;
                   std::transform(input_datas.begin(), input_datas.end(), std::back_inserter(outputs), [](auto const& data) {
@@ -54,13 +54,13 @@ struct predict_search: public pressio_search_plugin {
                   std::transform(outputs.begin(), outputs.end(), std::back_inserter(output_ptrs), [](auto& data) {
                           return &data;
                   });
-
+/*
                   int ec = metrics->decompress_many(compressed_ptrs.begin(), compressed_ptrs.end(),
                                            output_ptrs.begin(), output_ptrs.end());
                   if(ec < 0) {
                       throw pressio_search_exception("decompression failed in the proxy_fn "s + metrics->error_msg());
                   }
-              }
+ */             }
           }
           auto metrics_results = metrics->get_metrics_results();
           std::vector<double> features_v; 
