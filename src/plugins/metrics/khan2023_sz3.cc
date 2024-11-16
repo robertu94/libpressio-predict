@@ -5,40 +5,28 @@
 #include "libpressio_ext/cpp/metrics.h"
 #include "libpressio_ext/cpp/pressio.h"
 #include "libpressio_ext/cpp/options.h"
+#include "libpressio_ext/cpp/domain_manager.h"
 #include "std_compat/memory.h"
 
+#include <cmath>
+#include <random>
 #include <SZ3/predictor/Predictor.hpp>
-#include "SZ3/predictor/LorenzoPredictor.hpp"
 #include "SZ3/quantizer/Quantizer.hpp"
 #include "SZ3/encoder/Encoder.hpp"
 #include "SZ3/lossless/Lossless.hpp"
-#include "SZ3/utils/Iterator.hpp"
+#include "SZ3/lossless/Lossless_bypass.hpp"
 #include "SZ3/utils/MemoryUtil.hpp"
 #include "SZ3/utils/Config.hpp"
-#include "SZ3/utils/FileUtil.hpp"
 #include "SZ3/utils/Interpolators.hpp"
 #include "SZ3/utils/Timer.hpp"
 #include "SZ3/def.hpp"
 #include "SZ3/utils/Config.hpp"
-#include "SZ3/api/sz.hpp"
-#include "SZ3/compressor/SZInterpolationCompressor.hpp"
-#include "SZ3/compressor/deprecated/SZBlockInterpolationCompressor.hpp"
-#include "SZ3/quantizer/IntegerQuantizer.hpp"
-#include "SZ3/lossless/Lossless_zstd.hpp"
-#include "SZ3/lossless/Lossless_bypass.hpp"
-#include "SZ3/utils/Iterator.hpp"
-#include "SZ3/utils/Statistic.hpp"
-#include "SZ3/utils/Extraction.hpp"
-#include "SZ3/utils/QuantOptimizatioin.hpp"
+#include "SZ3/quantizer/LinearQuantizer.hpp"
 #include "SZ3/utils/Config.hpp"
-#include "SZ3/api/impl/SZLorenzoReg.hpp"
 #include "SZ3/utils/ByteUtil.hpp"
 #include "SZ3/utils/ska_hash/unordered_map.hpp"
-#include <memory>
 #include <cstring>
-#include <cmath>
 #include <cfloat>
-#include <fstream>
 #include <sys/stat.h>
 #include <limits.h>
 #include <algorithm>
@@ -46,11 +34,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-#include <iostream>
-#include <map>
-#include <unordered_map>
-#include <unordered_set>
-#include <set>
 
 namespace SZ3 {
 
@@ -698,7 +681,7 @@ public:
     SZInterpolationEstimator(Quantizer quantizer, Encoder encoder, Lossless lossless) :
             quantizer(quantizer), encoder(encoder), lossless(lossless) {
 
-        static_assert(std::is_base_of<concepts::QuantizerInterface<T>, Quantizer>::value,
+        static_assert(std::is_base_of<concepts::QuantizerInterface<T, int>, Quantizer>::value,
                       "must implement the quatizer interface");
         static_assert(std::is_base_of<concepts::EncoderInterface<int>, Encoder>::value,
                       "must implement the encoder interface");
@@ -882,11 +865,13 @@ public:
         // printf("Estimator huffman outsize %i\n", huff_size);
 		size_t postHuffmanBuffSize = buffer_pos - buffer;
 
-        size_t compressed_size = 0;
-        uchar *lossless_data = lossless.compress(buffer,
+        size_t out_cap = 2 * conf.num * sizeof(T);
+        auto out_buffer = std::make_unique<uchar[]>(out_cap);
+        size_t compressed_size = lossless.compress(buffer,
                                                  buffer_pos - buffer,
-                                                 compressed_size);
-        lossless.postcompress_data(buffer);
+                                                 out_buffer.get(),
+                                                 out_cap
+                                                 );
 
         // printf("Precompressedsize %i\n", compressed_size);
 
@@ -910,11 +895,12 @@ public:
                 }
             }
         }
-        if (freq[0] != 0) 
+        if (freq[0] != 0)  {
             prediction += ((float)freq[0]/num_samples) * 32;
-            // account for uncompressed values
-            compressed_size += freq[0] * sizeof(T);
-            // printf("qind[0]: %i, addition: %i, %f\n", freq[0], freq[0]*sizeof(T), ((float)freq[0]/num_samples) * 32);
+        }
+        // account for uncompressed values
+        compressed_size += freq[0] * sizeof(T);
+        // printf("qind[0]: %i, addition: %i, %f\n", freq[0], freq[0]*sizeof(T), ((float)freq[0]/num_samples) * 32);
 
 
         float p_0 = (float) zero_ind_freq / num_samples; // percent quant inds that are zero
@@ -980,7 +966,8 @@ private:
 
     //quantize and record the quantization bins
     inline void quantize(size_t idx, T &d, T pred) {
-        quant_inds.push_back(quantizer.quantize(d, pred));
+        auto quant = quantizer;
+        quant_inds.push_back(quant.quantize_and_overwrite(d, pred));
     }
 
 
@@ -1268,12 +1255,13 @@ namespace libpressio { namespace khan2023_sz3_metrics_ns {
 
 class khan2023_sz3_plugin : public libpressio_metrics_plugin {
   public:
-    int begin_compress_impl(struct pressio_data const* input, pressio_data const*) override {
-      assert(input->dtype() == pressio_float_dtype);
-      assert(input->num_dimensions() < 5);
-      float * data = static_cast<float*>(input->data());
-      auto dimensions = input->dimensions();
-      switch(input->num_dimensions()) {
+    int begin_compress_impl(struct pressio_data const* real_input, pressio_data const*) override {
+      pressio_data input = domain_manager().make_readable(domain_plugins().build("malloc"), *real_input);
+      assert(input.dtype() == pressio_float_dtype);
+      assert(input.num_dimensions() < 5);
+      float * data = static_cast<float*>(input.data());
+      auto dimensions = input.dimensions();
+      switch(input.num_dimensions()) {
         case 1:
         {
           SZ3::Config conf(dimensions[0]);

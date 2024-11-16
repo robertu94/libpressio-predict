@@ -4,6 +4,7 @@
 #include "libpressio_ext/cpp/metrics.h"
 #include "libpressio_ext/cpp/pressio.h"
 #include "libpressio_ext/cpp/options.h"
+#include "libpressio_ext/cpp/domain_manager.h"
 #include "std_compat/memory.h"
 #include <cmath>
 
@@ -11,27 +12,28 @@ namespace libpressio { namespace rahman2023_metrics_ns {
 
 class rahman2023_plugin : public libpressio_metrics_plugin {
   public:
-    int begin_compress_impl(struct pressio_data const* input, pressio_data const*) override {
-      if (!input->has_data()){
+    int begin_compress_impl(struct pressio_data const* real_input, pressio_data const*) override {
+      pressio_data input = domain_manager().make_readable(domain_plugins().build("malloc"), *real_input);
+      if (!input.has_data()){
         return set_error(1, "Data has not loaded successfully!");
       }
       else {
         // check the dimensions and hook appropriate function
         // Expecting data dimensions in reverse order, for example with Hurricane dataset 500x500x100
         // make sure data has either of only two types
-        if (input->dtype() != pressio_float_dtype && input->dtype() != pressio_double_dtype) {
+        if (input.dtype() != pressio_float_dtype && input.dtype() != pressio_double_dtype) {
           return set_error(1, "Data type must be single or double precision floating point for FXRZ");
         }
-        switch (input->num_dimensions()) 
+        switch (input.num_dimensions()) 
         {
         case 1:
-          runFXRZwith1DData(input); 
+          runFXRZwith1DData(&input); 
           return 0;
         case 2:
-          runFXRZwith2DData(input);
+          runFXRZwith2DData(&input);
           return 0;
         case 3:
-          runFXRZwith3DData(input);
+          runFXRZwith3DData(&input);
           return 0;
         default:
           set_error(1, "Not valid number of dimenstions. Number of dimensions must be among 1, 2 or 3.");

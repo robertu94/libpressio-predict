@@ -5,10 +5,11 @@
 #include "libpressio_ext/cpp/metrics.h"
 #include "libpressio_ext/cpp/pressio.h"
 #include "libpressio_ext/cpp/options.h"
+#include "libpressio_ext/cpp/domain_manager.h"
 #include "std_compat/memory.h"
-#include "SZ3/frontend/SZGeneralFrontend.hpp"
-#include "SZ3/quantizer/Quantizer.hpp"
-#include "SZ3/quantizer/IntegerQuantizer.hpp"
+#include <cmath>
+#include "SZ3/utils/Config.hpp"
+#include "SZ3/quantizer/LinearQuantizer.hpp"
 #include "SZ3/predictor/LorenzoPredictor.hpp"
 
 namespace libpressio { namespace sian2022_metrics_ns {
@@ -86,13 +87,14 @@ class sian2022_plugin : public libpressio_metrics_plugin {
       return 32/prediction;
     }
 
-    int begin_compress_impl(struct pressio_data const* input, pressio_data const*) override {
-      assert(input->dtype() == pressio_float_dtype);
-      assert(input->num_dimensions() < 5);
-      auto dimensions = input->dimensions();
-      int nn = input->num_dimensions();
-      float * data = static_cast<float*>(input->data());
-      switch(input->num_dimensions()) {
+    int begin_compress_impl(struct pressio_data const* real_input, pressio_data const*) override {
+      pressio_data input = domain_manager().make_readable(domain_plugins().build("malloc"), *real_input);
+      assert(input.dtype() == pressio_float_dtype);
+      assert(input.num_dimensions() < 5);
+      auto dimensions = input.dimensions();
+      int nn = input.num_dimensions();
+      float * data = static_cast<float*>(input.data());
+      switch(input.num_dimensions()) {
         case 1:
         {
           SZ3::Config conf(dimensions[0]);
@@ -140,12 +142,18 @@ class sian2022_plugin : public libpressio_metrics_plugin {
     pressio_options opts;
     set(opts, "pressio:stability", "stable");
     set(opts, "pressio:thread_safe", pressio_thread_safety_multiple);
+    set(opts, "predictors:requires_decompress", false);
+    set(opts, "predictors:invalidate", std::vector<std::string>{"predictors:error_dependent", "predictors:error_agnostic", "predictors:data"});
     return opts;
   }
 
   struct pressio_options get_documentation_impl() const override {
     pressio_options opt;
-    set(opt, "pressio:description", "");
+    set(opt, "pressio:description", "the prediction mechanism from \"Improving Prediction-Based Lossy Compression Dramatically via Ratio-Quality Modeling\" by Sian Jin et al 2022, it is suited for predicting SZ3 preformance");
+    set(opt, "pressio:abs", "absolute pointwise error bound");
+    set(opt, "sian2022:error_bound", "absolute pointwise error bound");
+    set(opt, "sian2022:block_size", "the block size to use or 0 to use default blocks sizes");
+    set(opt, "sian2022:size:compression_ratio", "estimated compression ratio");
     return opt;
   }
 

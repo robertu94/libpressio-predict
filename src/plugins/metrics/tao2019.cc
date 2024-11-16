@@ -6,6 +6,7 @@
 #include "libpressio_ext/cpp/pressio.h"
 #include "libpressio_ext/cpp/options.h"
 #include "libpressio_ext/cpp/compressor.h"
+#include "libpressio_ext/cpp/domain_manager.h"
 #include <libpressio_dataset_ext/loader.h>
 #include "std_compat/memory.h"
 
@@ -15,13 +16,14 @@ namespace libpressio { namespace tao2019_metrics_ns {
 
 class tao2019_plugin : public libpressio_metrics_plugin {
   public:
-    int begin_compress_impl(struct pressio_data const* input, pressio_data const*) override {
+    int begin_compress_impl(struct pressio_data const* real_input, pressio_data const*) override {
+      pressio_data input = domain_manager().make_readable(domain_plugins().build("malloc"), *real_input);
       pressio_dataset_loader sampler = dataset_loader_plugins().build("block_sampler");
       pressio_data block_size_dat;
       if(block_size.size() != 0) {
           block_size_dat = pressio_data(block_size.begin(), block_size.end());
       } else {
-          switch(input->num_dimensions()) {
+          switch(input.num_dimensions()) {
               case 1:
                   block_size_dat = pressio_data{uint64_t{128}};
                   break;
@@ -39,7 +41,7 @@ class tao2019_plugin : public libpressio_metrics_plugin {
         {"block_sampler:n", n},
         {"block_sampler:seed", seed},
         {"from_data:n", uint64_t{1}},
-        {"from_data:data-0", pressio_data::nonowning(input->dtype(), input->data(), input->dimensions())}
+        {"from_data:data-0", pressio_data::nonowning(input)}
       });
 
       std::vector<pressio_data> samples = sampler->load_all_data();

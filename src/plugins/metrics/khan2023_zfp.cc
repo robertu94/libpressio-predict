@@ -5,6 +5,7 @@
 #include "libpressio_ext/cpp/metrics.h"
 #include "libpressio_ext/cpp/pressio.h"
 #include "libpressio_ext/cpp/options.h"
+#include "libpressio_ext/cpp/domain_manager.h"
 #include "std_compat/memory.h"
 
 #include <iostream>
@@ -170,15 +171,16 @@ namespace libpressio { namespace khan2023_zfp_metrics_ns {
 
 class khan2023_zfp_plugin : public libpressio_metrics_plugin {
   public:
-    int begin_compress_impl(struct pressio_data const* input, pressio_data const*) override {
-      assert(input->dtype() == pressio_float_dtype);
-      assert(input->num_dimensions() < 4);
-      std::vector<size_t> dims = input->dimensions();
+    int begin_compress_impl(struct pressio_data const* real_input, pressio_data const*) override {
+        pressio_data input = domain_manager().make_readable(domain_plugins().build("malloc"), *real_input);
+      assert(input.dtype() == pressio_float_dtype);
+      assert(input.num_dimensions() < 4);
+      std::vector<size_t> dims = input.dimensions();
       size_t sample_num;
       std::vector<size_t> sample_dims;
       std::vector<float> sample_data;
-      float * data_ = static_cast<float*>(input->data());
-      switch(input->num_dimensions()){
+      float * data_ = static_cast<float*>(input.data());
+      switch(input.num_dimensions()){
 			case 1:
 				sample_data = sampling_1d<float>(data_, dims, sample_num, sample_dims, sample_ratio);
 				break;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(LibPressioPredict VERSION 0.0.4)
+project(LibPressioPredict VERSION 0.0.5)
 
 #correct was to set a default build type
 # https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -72,7 +72,7 @@ if(LIBPRESSIO_PREDICT_HAS_SIAN2022)
         src/plugins/metrics/sian2022.cc)
 endif()
 
-option(LIBPRESSIO_PREDICT_HAS_PYTHON "build support for predictors in python" ON)
+option(LIBPRESSIO_PREDICT_HAS_PYTHON "build support for predictors in python" OFF)
 if(LIBPRESSIO_PREDICT_HAS_PYTHON)
   find_package(pybind11 REQUIRED)
   find_package(Python3 REQUIRED COMPONENTS Development.Embed)
@@ -83,7 +83,7 @@ if(LIBPRESSIO_PREDICT_HAS_PYTHON)
   target_link_libraries(libpressio_predict PRIVATE pybind11::embed Python3::Python)
 endif()
 
-option(LIBPRESSIO_PREDICT_HAS_OPT "build support for proxy based predictors" ON)
+option(LIBPRESSIO_PREDICT_HAS_OPT "build support for proxy based predictors" OFF)
 if(LIBPRESSIO_PREDICT_HAS_OPT)
     find_package(LibPressioOpt REQUIRED)
     target_sources(libpressio_predict
