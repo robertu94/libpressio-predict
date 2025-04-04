@@ -1,4 +1,5 @@
 #include "libpressio_predict_ext/cpp/predict.h"
+#include "libpressio_predict_ext/cpp/predict_metrics.h"
 #include <sstream>
 
 namespace libpressio { namespace predict {

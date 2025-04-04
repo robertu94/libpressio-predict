@@ -18,3 +18,4 @@ endif()
 
 add_executable(test_scheme test_scheme.cc)
 target_link_libraries(test_scheme PRIVATE libpressio_predict)
+add_test(NAME test_scheme COMMAND test_scheme)

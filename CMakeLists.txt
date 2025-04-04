@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(LibPressioPredict VERSION 0.0.5)
+project(LibPressioPredict VERSION 0.0.6)
 
 #correct was to set a default build type
 # https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -34,6 +34,7 @@ add_library(libpressio_predict
     src/plugins/metrics/tao2019.cc
     src/plugins/metrics/rahman2023.cc
     src/plugins/metrics/bench_metric.cc
+    src/plugins/scheme/base.cc
     src/plugins/scheme/simple.cc
     src/plugins/scheme/tao2019.cc
     )
@@ -59,7 +60,10 @@ if(LIBPRESSIO_PREDICT_HAS_KHAN2023)
     target_link_libraries(libpressio_predict PRIVATE zfp::zfp)
     target_sources(libpressio_predict PRIVATE
         src/plugins/metrics/khan2023_sz3.cc
-        src/plugins/metrics/khan2023_zfp.cc)
+        src/plugins/metrics/khan2023_zfp.cc
+        src/plugins/scheme/khan2023_sz3.cc
+        src/plugins/scheme/khan2023_zfp.cc
+    )
 endif()
 
 option(LIBPRESSIO_PREDICT_HAS_SIAN2022 "build support for sian 2022" OFF)
@@ -69,7 +73,9 @@ if(LIBPRESSIO_PREDICT_HAS_SIAN2022)
     find_package(SZ3 REQUIRED)
     target_link_libraries(libpressio_predict PRIVATE SZ3::SZ3)
     target_sources(libpressio_predict PRIVATE
-        src/plugins/metrics/sian2022.cc)
+        src/plugins/metrics/sian2022.cc
+        src/plugins/scheme/sian2022.cc
+    )
 endif()
 
 option(LIBPRESSIO_PREDICT_HAS_PYTHON "build support for predictors in python" OFF)

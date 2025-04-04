@@ -23,6 +23,14 @@ class libpressio_noop_predict final : public libpressio_predict_plugin {
     const char* prefix() const override {
         return "noop";
     }
+
+    bool training_required() const override {
+        return false;
+    }
 };
+
+static pressio_register compressor_many_fields_plugin(predictor_plugins(), "noop", []() {
+  return compat::make_unique<libpressio_noop_predict>();
+});
 
 } }

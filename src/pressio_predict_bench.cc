@@ -1,7 +1,5 @@
-#include <numeric>
 #include <iostream>
 #include <map>
-#include <set>
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
@@ -15,11 +13,11 @@
 #include <libpressio_ext/cpp/printers.h>
 #include <libdistributed_work_queue.h>
 
-#include "libpressio_predict.h"
 #include "pressio_predict_bench_db.h"
 #include "pressio_predict_bench_cli.h"
 #include "pressio_predict_bench_kfold.h"
 #include "libpressio_predict_ext/cpp/predict.h"
+#include <libpressio_predict_ext/cpp/predict_metrics.h>
 
 using namespace libpressio_dataset;
 using namespace libpressio::predict;

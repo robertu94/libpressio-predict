@@ -6,3 +6,5 @@ spack-configure-*
 *.btr
 perf.data
 perf.data.old
+.clangd
+build-linux-*

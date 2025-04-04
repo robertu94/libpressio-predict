@@ -111,7 +111,8 @@ class tao2019_plugin : public libpressio_metrics_plugin {
   }
 
   void set_name_impl(std::string const& s) override {
-      comp->set_name(s + "/" + comp->prefix());
+      if(s.empty()) comp->set_name(s);
+      else comp->set_name(s + "/" + comp->prefix());
   }
 
   std::unique_ptr<libpressio_metrics_plugin> clone() override {

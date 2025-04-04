@@ -1,5 +1,5 @@
 #include <libpressio_ext/cpp/data.h>
-#include <libpressio_predict_ext/cpp/predict.h>
+#include <libpressio_predict_ext/cpp/predict_metrics.h>
 #include <std_compat/memory.h>
 #include <cmath>
 

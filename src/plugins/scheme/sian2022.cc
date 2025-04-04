@@ -8,49 +8,50 @@ namespace libpressio { namespace predict {
 using namespace std::string_literals;
 
 
-class tao2019_predict_scheme_plugin : public libpressio_simple_predict_scheme_plugin {
+class sian2022_predict_scheme_plugin : public libpressio_simple_predict_scheme_plugin {
     public:
     int set_options(pressio_options const& op) final {
-        return tao->set_options(op);
+        return sian->set_options(op);
     }
     pressio_options get_options() const final {
-        return tao->get_options();
+        return sian->get_options();
     }
     pressio_options get_configuration_impl() const final {
-        return tao->get_configuration();
+        return sian->get_configuration();
     }
     pressio_options get_documentation() const final {
-        return tao->get_documentation();
+        return sian->get_documentation();
     }
     void set_name(std::string const& s) final {
-        if(s.empty()) tao->set_name(s);
-        else tao->set_name(s + '/' + tao->prefix());
+        if(s.empty()) sian->set_name(s);
+        else sian->set_name(s + '/' + sian->prefix());
     }
     const char* prefix() const final {
-        return "tao2019";
+        return "sian2022";
     }
     std::unique_ptr<libpressio_predict_scheme_plugin> clone() const override {
-        return compat::make_unique<tao2019_predict_scheme_plugin>(*this);
+        return compat::make_unique<sian2022_predict_scheme_plugin>(*this);
     }
 
     private:
     std::vector<metric_usage> metrics_to_modules() override {
         return {
-            {"tao2019:size:compression_ratio", "tao2019", metric_usage::feature},
+            {"sian2022:size:compression_ratio", "sian2022", metric_usage::feature},
             {"size:compression_ratio", "size", metric_usage::label}
         };
     }
     std::map<std::string, pressio_metrics&> module_build_override() override {
         return {
-            {"tao2019", tao}
+            {"sian2022", sian}
         };
     }
 
-    pressio_metrics tao = metrics_plugins().build("tao2019");
+    pressio_metrics sian = metrics_plugins().build("sian2022");
 };
 
-static pressio_register tao2019_register_var(scheme_plugins(), "tao2019", []() {
-  return compat::make_unique<tao2019_predict_scheme_plugin>();
+static pressio_register sian2022_register_var(scheme_plugins(), "sian2022", []() {
+  return compat::make_unique<sian2022_predict_scheme_plugin>();
 });
 
 } }
+

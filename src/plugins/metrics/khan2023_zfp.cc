@@ -8,10 +8,7 @@
 #include "libpressio_ext/cpp/domain_manager.h"
 #include "std_compat/memory.h"
 
-#include <iostream>
-#include <fstream>
 #include <vector>
-#include <type_traits>
 #include <cmath>
 #include <numeric>
 #include <stdio.h>
@@ -19,7 +16,6 @@
 #include <libpressio_ext/cpp/libpressio.h>
 #include <libpressio_ext/io/posix.h>
 #include <zfp.h>
-#include <chrono>
 #include <cmath>
 #include <cfloat>
 #include <sys/stat.h>

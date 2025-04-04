@@ -106,6 +106,11 @@ class __attribute__((visibility ("hidden"))) libpressio_python_predict final : p
         return "python";
     }
 
+    bool training_required() const override {
+        return true;
+    }
+
+
     std::string program;
     std::vector<std::string> names;
     std::shared_ptr<python_launch::libpressio_external_pybind_manager> pybind_manager;
